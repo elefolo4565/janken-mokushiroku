@@ -1,0 +1,198 @@
+[gd_scene load_steps=2 format=3 uid="uid://c3rooml001"]
+
+[ext_resource type="Script" path="res://scripts/lobby/room_list.gd" id="1_roomlist"]
+
+[node name="RoomList" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_roomlist")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="Margin/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 50)
+text = "戻る"
+
+[node name="Title" type="Label" parent="Margin/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ロビー"
+horizontal_alignment = 1
+
+[node name="RefreshButton" type="Button" parent="Margin/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 50)
+text = "更新"
+
+[node name="Sep1" type="HSeparator" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="CreateSection" type="VBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="CreateLabel" type="Label" parent="Margin/VBox/CreateSection"]
+layout_mode = 2
+text = "ルームを作成"
+
+[node name="RoomNameInput" type="LineEdit" parent="Margin/VBox/CreateSection"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+placeholder_text = "ルーム名（省略可）"
+
+[node name="SettingsGrid" type="GridContainer" parent="Margin/VBox/CreateSection"]
+layout_mode = 2
+columns = 2
+
+[node name="CardsLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "各手のカード枚数"
+
+[node name="CardsSpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 10.0
+value = 4.0
+
+[node name="StarsLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "初期の星"
+
+[node name="StarsSpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 10.0
+value = 3.0
+
+[node name="VictoryLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "勝利に必要な星"
+
+[node name="VictorySpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 20.0
+value = 3.0
+
+[node name="TimeLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "制限時間（秒）"
+
+[node name="TimeSpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 60.0
+max_value = 600.0
+step = 30.0
+value = 300.0
+
+[node name="InitialGoldLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "初期ゴールド"
+
+[node name="InitialGoldSpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 1000.0
+step = 10.0
+value = 100.0
+
+[node name="VictoryGoldLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "勝利に必要なゴールド"
+
+[node name="VictoryGoldSpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 1000.0
+step = 10.0
+value = 50.0
+
+[node name="ZoneCountLabel" type="Label" parent="Margin/VBox/CreateSection/SettingsGrid"]
+layout_mode = 2
+text = "勝負ゾーン数"
+
+[node name="ZoneCountSpinBox" type="SpinBox" parent="Margin/VBox/CreateSection/SettingsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 10.0
+value = 4.0
+
+[node name="CreateButton" type="Button" parent="Margin/VBox/CreateSection"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
+text = "ルームを作成"
+
+[node name="Sep2" type="HSeparator" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="JoinSection" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="JoinIdInput" type="LineEdit" parent="Margin/VBox/JoinSection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 50)
+placeholder_text = "ルームIDで参加..."
+
+[node name="JoinButton" type="Button" parent="Margin/VBox/JoinSection"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(100, 50)
+text = "参加"
+
+[node name="Sep3" type="HSeparator" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="ListLabel" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+text = "ルーム一覧"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RoomListContainer" type="VBoxContainer" parent="Margin/VBox/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3

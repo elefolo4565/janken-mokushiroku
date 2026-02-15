@@ -1,0 +1,163 @@
+[gd_scene format=3 uid="uid://da0one001"]
+
+[ext_resource type="Script" path="res://scripts/game/zone_dialog.gd" id="1_zone"]
+
+[node name="ZoneDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_zone")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -250.0
+offset_right = 300.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "対戦相手"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="OpponentNameLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "???"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="OpponentInfoLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⭐ 0  💰 0  カード残: 0枚"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+
+[node name="Sep" type="HSeparator" parent="Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="ChoicePanel" type="VBoxContainer" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ButtonRow" type="HBoxContainer" parent="Panel/Margin/VBox/ChoicePanel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="FightButton" type="Button" parent="Panel/Margin/VBox/ChoicePanel/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(200, 60)
+text = "勝負する"
+
+[node name="LeaveButton" type="Button" parent="Panel/Margin/VBox/ChoicePanel/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(200, 60)
+text = "やめる"
+
+[node name="FightPanel" type="VBoxContainer" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 10
+
+[node name="HandLabel" type="Label" parent="Panel/Margin/VBox/FightPanel"]
+layout_mode = 2
+text = "出す手を選択:"
+horizontal_alignment = 1
+
+[node name="HandRow" type="HBoxContainer" parent="Panel/Margin/VBox/FightPanel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="HandRockBtn" type="Button" parent="Panel/Margin/VBox/FightPanel/HandRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 60)
+toggle_mode = true
+text = "✊
+グー"
+
+[node name="HandScissorsBtn" type="Button" parent="Panel/Margin/VBox/FightPanel/HandRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 60)
+toggle_mode = true
+text = "✌
+チョキ"
+
+[node name="HandPaperBtn" type="Button" parent="Panel/Margin/VBox/FightPanel/HandRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 60)
+toggle_mode = true
+text = "✋
+パー"
+
+[node name="BetRow" type="HBoxContainer" parent="Panel/Margin/VBox/FightPanel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="BetLabel" type="Label" parent="Panel/Margin/VBox/FightPanel/BetRow"]
+layout_mode = 2
+text = "賭け金: 💰"
+
+[node name="BetSpin" type="SpinBox" parent="Panel/Margin/VBox/FightPanel/BetRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+min_value = 0.0
+max_value = 1000.0
+step = 1.0
+
+[node name="ConfirmFightBtn" type="Button" parent="Panel/Margin/VBox/FightPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+text = "確定"
+
+[node name="WaitingLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+text = "相手の選択を待っています..."
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20

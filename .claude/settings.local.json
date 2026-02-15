@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.godotengine.org)",
+      "Bash(cmd.exe /c \"cd /d d:\\\\projects\\\\godot\\\\myprojects && rename online-janken janken_mokushiroku\")"
+    ]
+  }
+}

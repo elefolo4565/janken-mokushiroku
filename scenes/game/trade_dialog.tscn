@@ -1,0 +1,198 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8trade001"]
+
+[ext_resource type="Script" path="res://scripts/game/trade_dialog.gd" id="1_trade"]
+
+[node name="TradeDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_trade")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -280.0
+offset_right = 300.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+
+[node name="PartnerNameLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "取引相手: ???"
+horizontal_alignment = 1
+
+[node name="Sep1" type="HSeparator" parent="Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="OfferLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "あなたが渡すもの"
+
+[node name="OfferGrid" type="GridContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+columns = 4
+
+[node name="L1" type="Label" parent="Panel/Margin/VBox/OfferGrid"]
+layout_mode = 2
+text = "✊"
+
+[node name="OfferRockSpin" type="SpinBox" parent="Panel/Margin/VBox/OfferGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+
+[node name="L2" type="Label" parent="Panel/Margin/VBox/OfferGrid"]
+layout_mode = 2
+text = "✌"
+
+[node name="OfferScissorsSpin" type="SpinBox" parent="Panel/Margin/VBox/OfferGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+
+[node name="L3" type="Label" parent="Panel/Margin/VBox/OfferGrid"]
+layout_mode = 2
+text = "✋"
+
+[node name="OfferPaperSpin" type="SpinBox" parent="Panel/Margin/VBox/OfferGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+
+[node name="L4" type="Label" parent="Panel/Margin/VBox/OfferGrid"]
+layout_mode = 2
+text = "⭐"
+
+[node name="OfferStarsSpin" type="SpinBox" parent="Panel/Margin/VBox/OfferGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 20.0
+
+[node name="L4b" type="Label" parent="Panel/Margin/VBox/OfferGrid"]
+layout_mode = 2
+text = "💰"
+
+[node name="OfferGoldSpin" type="SpinBox" parent="Panel/Margin/VBox/OfferGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 9999.0
+step = 10.0
+
+[node name="Sep2" type="HSeparator" parent="Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="RequestLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "あなたがもらうもの"
+
+[node name="RequestGrid" type="GridContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+columns = 4
+
+[node name="L5" type="Label" parent="Panel/Margin/VBox/RequestGrid"]
+layout_mode = 2
+text = "✊"
+
+[node name="RequestRockSpin" type="SpinBox" parent="Panel/Margin/VBox/RequestGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+
+[node name="L6" type="Label" parent="Panel/Margin/VBox/RequestGrid"]
+layout_mode = 2
+text = "✌"
+
+[node name="RequestScissorsSpin" type="SpinBox" parent="Panel/Margin/VBox/RequestGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+
+[node name="L7" type="Label" parent="Panel/Margin/VBox/RequestGrid"]
+layout_mode = 2
+text = "✋"
+
+[node name="RequestPaperSpin" type="SpinBox" parent="Panel/Margin/VBox/RequestGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+
+[node name="L8" type="Label" parent="Panel/Margin/VBox/RequestGrid"]
+layout_mode = 2
+text = "⭐"
+
+[node name="RequestStarsSpin" type="SpinBox" parent="Panel/Margin/VBox/RequestGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 20.0
+
+[node name="L8b" type="Label" parent="Panel/Margin/VBox/RequestGrid"]
+layout_mode = 2
+text = "💰"
+
+[node name="RequestGoldSpin" type="SpinBox" parent="Panel/Margin/VBox/RequestGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 9999.0
+step = 10.0
+
+[node name="Sep3" type="HSeparator" parent="Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="TradeStatusLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="SendOfferBtn" type="Button" parent="Panel/Margin/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(140, 50)
+text = "提案する"
+
+[node name="AcceptBtn" type="Button" parent="Panel/Margin/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(140, 50)
+text = "承認する"
+
+[node name="CancelBtn" type="Button" parent="Panel/Margin/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(140, 50)
+text = "キャンセル"
