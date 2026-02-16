@@ -13,6 +13,7 @@ const FREEZE_DURATION := 5.0
 @onready var battle_log: Control = $BattleLog
 @onready var zone_dialog: Control = $ZoneDialog
 @onready var negotiate_btn: Button = $NegotiateButton
+@onready var exit_btn: Button = $ExitButton
 
 var _pinch_touches: Dictionary = {}
 var _pinch_start_dist := 0.0
@@ -21,6 +22,8 @@ var _pinch_start_zoom := 1.0
 func _ready() -> void:
 	NetworkManager.message_received.connect(_on_message)
 	negotiate_btn.toggled.connect(_on_negotiate_toggled)
+	exit_btn.text = char(0xE879) # Material Icons: exit_to_app
+	exit_btn.pressed.connect(_on_exit_pressed)
 	_show_start_overlay()
 
 func _show_start_overlay() -> void:
@@ -173,6 +176,59 @@ func _on_negotiate_toggled(pressed: bool) -> void:
 	else:
 		NetworkManager.select_command("none")
 
+func _on_exit_pressed() -> void:
+	# 確認ダイアログ
+	var overlay := ColorRect.new()
+	overlay.name = "ExitConfirmOverlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0, 0, 0, 0.7)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 20)
+	center.add_child(vbox)
+
+	var label := Label.new()
+	label.text = "本当に退場しますか？"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 28)
+	vbox.add_child(label)
+
+	var btn_row := HBoxContainer.new()
+	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	btn_row.add_theme_constant_override("separation", 20)
+	vbox.add_child(btn_row)
+
+	var confirm_btn := Button.new()
+	confirm_btn.text = "退場する"
+	confirm_btn.custom_minimum_size = Vector2(160, 55)
+	confirm_btn.pressed.connect(func() -> void:
+		overlay.queue_free()
+		_leave_room()
+	)
+	btn_row.add_child(confirm_btn)
+
+	var cancel_btn := Button.new()
+	cancel_btn.text = "キャンセル"
+	cancel_btn.custom_minimum_size = Vector2(160, 55)
+	cancel_btn.pressed.connect(func() -> void:
+		overlay.queue_free()
+	)
+	btn_row.add_child(cancel_btn)
+
+func _leave_room() -> void:
+	NetworkManager.leave_room()
+	GameState.reset()
+	var main_node := get_tree().root.get_node("Main")
+	if main_node and main_node.has_method("change_scene"):
+		main_node.change_scene("res://scenes/lobby/room_list.tscn")
+
 func _on_player_eliminated(data: Dictionary) -> void:
 	var pid: String = data.get("playerId", "")
 	if pid == GameState.player_id:
@@ -213,11 +269,7 @@ func _show_elimination_overlay(msg: String) -> void:
 	btn.text = "退場する"
 	btn.custom_minimum_size = Vector2(200, 60)
 	btn.pressed.connect(func() -> void:
-		NetworkManager.leave_room()
-		GameState.reset()
-		var main_node := get_tree().root.get_node("Main")
-		if main_node and main_node.has_method("change_scene"):
-			main_node.change_scene("res://scenes/lobby/room_list.tscn")
+		_leave_room()
 	)
 	vbox.add_child(btn)
 

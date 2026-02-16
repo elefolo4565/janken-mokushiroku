@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://c6game0001"]
+[gd_scene load_steps=11 format=3 uid="uid://c6game0001"]
 
 [ext_resource type="Script" path="res://scripts/game/game_screen.gd" id="1_game"]
+[ext_resource type="FontFile" path="res://assets/fonts/MaterialIcons-Regular.ttf" id="11_maticons"]
 [ext_resource type="Script" path="res://scripts/game/top_info_bar.gd" id="2_topbar"]
 [ext_resource type="Script" path="res://scripts/game/game_field.gd" id="3_field"]
 [ext_resource type="Script" path="res://scripts/game/goal_gate.gd" id="5_gate"]
@@ -160,6 +161,18 @@ offset_right = -15.0
 offset_bottom = -15.0
 toggle_mode = true
 text = "金 交渉"
+
+[node name="ExitButton" type="Button" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -55.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = 50.0
+theme_override_fonts/font = ExtResource("11_maticons")
+theme_override_font_sizes/font_size = 28
+text = ""
 
 [node name="BattleLog" type="Control" parent="."]
 layout_mode = 1
