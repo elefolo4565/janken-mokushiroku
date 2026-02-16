@@ -10,8 +10,23 @@ const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 10000;
 
-// 静的ファイル配信（HTML5エクスポート）
-app.use(express.static(path.join(__dirname, '../../export')));
+// HTMLファイルはキャッシュしない（常に最新を取得）
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path.endsWith('.html')) {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  }
+  next();
+});
+
+// 静的ファイル配信（HTML5エクスポート）- 1時間キャッシュ
+app.use(express.static(path.join(__dirname, '../../export'), {
+  maxAge: '1h',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
 
 // ヘルスチェック
 app.get('/health', (_req, res) => {

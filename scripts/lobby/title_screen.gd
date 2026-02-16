@@ -6,11 +6,13 @@ extends Control
 const SAVE_PATH := "user://settings.cfg"
 const AVATAR_COUNT := 12
 const AVATAR_PREVIEW_SIZE := 40
+const VERSION := "0.2.0"
 
 @onready var name_input: LineEdit = %NameInput
 @onready var connect_button: Button = %ConnectButton
 @onready var status_label: Label = %StatusLabel
 @onready var avatar_row: HBoxContainer = %AvatarRow
+@onready var version_label: Label = %VersionLabel
 
 var _selected_avatar_id := 0
 var _avatar_buttons: Array[Button] = []
@@ -20,6 +22,9 @@ func _ready() -> void:
 	NetworkManager.disconnected.connect(_on_server_disconnected)
 	NetworkManager.message_received.connect(_on_message)
 	connect_button.pressed.connect(_on_connect_pressed)
+
+	# バージョン情報表示
+	version_label.text = "v%s" % VERSION
 
 	# アバター選択ボタンを生成
 	_create_avatar_buttons()

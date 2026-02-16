@@ -58,7 +58,7 @@ func _show_received_offer() -> void:
 	var req_stars: int = _received_request.get("stars", 0)
 	var req_gold: int = _received_request.get("gold", 0)
 
-	status_label.text = "相手の提案:\n提供: ✊%d ✌%d ✋%d ⭐%d 💰%d\n要求: ✊%d ✌%d ✋%d ⭐%d 💰%d" % [
+	status_label.text = "相手の提案:\n提供: グー%d チョキ%d パー%d ★%d 金%d\n要求: グー%d チョキ%d パー%d ★%d 金%d" % [
 		offer_cards.get("rock", 0), offer_cards.get("scissors", 0), offer_cards.get("paper", 0), offer_stars, offer_gold,
 		req_cards.get("rock", 0), req_cards.get("scissors", 0), req_cards.get("paper", 0), req_stars, req_gold,
 	]

@@ -60,10 +60,10 @@ func _show_start_overlay() -> void:
 	var seconds := GameState.time_limit % 60
 	var rules_text := ""
 	rules_text += "[ 勝利条件 ]\n"
-	rules_text += "☆ %d 以上  &  💰 %d 以上\n" % [GameState.victory_stars, GameState.victory_gold]
+	rules_text += "★ %d 以上  &  金 %d 以上\n" % [GameState.victory_stars, GameState.victory_gold]
 	rules_text += "カードを全て使い切りゴールゲートへ！\n"
 	rules_text += "\n"
-	rules_text += "手札: ✊✌✋  各 %d 枚\n" % GameState.cards_per_type
+	rules_text += "手札: グー/チョキ/パー  各 %d 枚\n" % GameState.cards_per_type
 	rules_text += "制限時間: %d:%02d" % [minutes, seconds]
 
 	var rules := Label.new()
@@ -177,10 +177,53 @@ func _on_player_eliminated(data: Dictionary) -> void:
 	var pid: String = data.get("playerId", "")
 	if pid == GameState.player_id:
 		var reason: String = data.get("reason", "")
+		var msg := ""
 		if reason == "no_opponents":
-			battle_log.show_elimination("対戦相手がいません…敗北！")
+			msg = "対戦相手がいません…敗北！"
 		else:
-			battle_log.show_elimination("あなたは退場しました...")
+			msg = "あなたは退場しました..."
+		battle_log.show_elimination(msg)
+		_show_elimination_overlay(msg)
+
+func _show_elimination_overlay(msg: String) -> void:
+	var overlay := ColorRect.new()
+	overlay.name = "EliminationOverlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0, 0, 0, 0.0)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 20)
+	center.add_child(vbox)
+
+	var label := Label.new()
+	label.text = msg
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	vbox.add_child(label)
+
+	var btn := Button.new()
+	btn.text = "退場する"
+	btn.custom_minimum_size = Vector2(200, 60)
+	btn.pressed.connect(func() -> void:
+		NetworkManager.leave_room()
+		GameState.reset()
+		var main_node := get_tree().root.get_node("Main")
+		if main_node and main_node.has_method("change_scene"):
+			main_node.change_scene("res://scenes/lobby/room_list.tscn")
+	)
+	vbox.add_child(btn)
+
+	# フェードイン
+	var tw := create_tween()
+	tw.tween_property(overlay, "color:a", 0.85, 0.5)
 
 func _on_player_cleared(data: Dictionary) -> void:
 	var pid: String = data.get("playerId", "")

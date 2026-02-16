@@ -10,9 +10,9 @@ const DISPLAY_DURATION := 5.0
 const FADE_DURATION := 0.5
 
 const HAND_ICONS := {
-	"rock": "✊",
-	"scissors": "✌",
-	"paper": "✋",
+	"rock": "グー",
+	"scissors": "チョキ",
+	"paper": "パー",
 }
 
 var _entries: Array = [] # Array of Label

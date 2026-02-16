@@ -4,9 +4,9 @@ extends Control
 ## ゾーンで2名マッチした際に全画面黒背景でフェードイン表示
 
 const HAND_ICONS := {
-	"rock": "✊",
-	"scissors": "✌",
-	"paper": "✋",
+	"rock": "グー",
+	"scissors": "チョキ",
+	"paper": "パー",
 }
 
 const PlayerCharacter = preload("res://scripts/game/player_character.gd")
@@ -48,7 +48,7 @@ func _process(_delta: float) -> void:
 	if not visible:
 		return
 	var totals: Dictionary = GameState.card_totals
-	card_totals_label.text = "場: ✊%d  ✌%d  ✋%d" % [
+	card_totals_label.text = "場: グー%d  チョキ%d  パー%d" % [
 		totals.get("rock", 0),
 		totals.get("scissors", 0),
 		totals.get("paper", 0),
@@ -80,7 +80,7 @@ func show_match(data: Dictionary) -> void:
 	opp_name_label.text = opp.get("name", "???")
 
 	# 相手情報
-	opponent_info_label.text = "⭐ %d  💰 %d  カード残: %d枚" % [
+	opponent_info_label.text = "★ %d  金 %d  カード残: %d枚" % [
 		opp.get("stars", 0),
 		opp.get("gold", 0),
 		opp.get("cardsLeft", 0),
@@ -93,9 +93,9 @@ func show_match(data: Dictionary) -> void:
 
 	# カード枚数表示 + 0枚の手は選択不可
 	var mc: Dictionary = GameState.my_cards
-	hand_rock_btn.text = "✊\nグー ×%d" % mc.get("rock", 0)
-	hand_scissors_btn.text = "✌\nチョキ ×%d" % mc.get("scissors", 0)
-	hand_paper_btn.text = "✋\nパー ×%d" % mc.get("paper", 0)
+	hand_rock_btn.text = "グー\n×%d" % mc.get("rock", 0)
+	hand_scissors_btn.text = "チョキ\n×%d" % mc.get("scissors", 0)
+	hand_paper_btn.text = "パー\n×%d" % mc.get("paper", 0)
 	hand_rock_btn.disabled = mc.get("rock", 0) <= 0
 	hand_scissors_btn.disabled = mc.get("scissors", 0) <= 0
 	hand_paper_btn.disabled = mc.get("paper", 0) <= 0
@@ -191,10 +191,10 @@ func show_result(data: Dictionary) -> void:
 		detail_label.text = "カード消費のみ"
 		detail_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	elif i_won:
-		detail_label.text = "⭐+1  💰+%d" % bet
+		detail_label.text = "★+1  金+%d" % bet
 		detail_label.add_theme_color_override("font_color", Color.GREEN)
 	else:
-		detail_label.text = "⭐-1  💰-%d" % bet
+		detail_label.text = "★-1  金-%d" % bet
 		detail_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 
 	# --- アニメーション ---

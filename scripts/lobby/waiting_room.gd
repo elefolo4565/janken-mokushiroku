@@ -52,7 +52,7 @@ func _update_display() -> void:
 	var fw: int = settings.get("fieldWidth", 800)
 	var zone_count: int = settings.get("battleZoneCount", 4)
 	var field_name := _get_field_size_name(fw, zone_count)
-	settings_label.text = "カード: 各%d枚 | 星: %d個 | 勝利: 星%d+💰%d | 制限: %d秒 | %s" % [
+	settings_label.text = "カード: 各%d枚 | 星: %d個 | 勝利: 星%d+金%d | 制限: %d秒 | %s" % [
 		settings.get("cardsPerType", 4),
 		settings.get("initialStars", 3),
 		settings.get("victoryStars", 3),

@@ -42,7 +42,7 @@ theme_override_constants/separation = 15
 [node name="CardTotalsLabel" type="Label" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "場: ✊0 ✌0 ✋0"
+text = "場: グー0 チョキ0 パー0"
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
@@ -125,24 +125,21 @@ unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(100, 70)
 toggle_mode = true
-text = "✊
-グー"
+text = "グー"
 
 [node name="HandScissorsBtn" type="Button" parent="VBox/FightPanel/HandRow"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(100, 70)
 toggle_mode = true
-text = "✌
-チョキ"
+text = "チョキ"
 
 [node name="HandPaperBtn" type="Button" parent="VBox/FightPanel/HandRow"]
 unique_name_in_owner = true
 layout_mode = 2
 custom_minimum_size = Vector2(100, 70)
 toggle_mode = true
-text = "✋
-パー"
+text = "パー"
 
 [node name="BetRow" type="HBoxContainer" parent="VBox/FightPanel"]
 layout_mode = 2
@@ -151,7 +148,7 @@ theme_override_constants/separation = 10
 
 [node name="BetLabel" type="Label" parent="VBox/FightPanel/BetRow"]
 layout_mode = 2
-text = "賭け金: 💰"
+text = "賭け金: 金"
 
 [node name="BetSpin" type="SpinBox" parent="VBox/FightPanel/BetRow"]
 unique_name_in_owner = true

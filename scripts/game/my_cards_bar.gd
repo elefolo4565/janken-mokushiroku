@@ -10,6 +10,6 @@ func _process(_delta: float) -> void:
 	if not GameState.in_game:
 		return
 	var mc: Dictionary = GameState.my_cards
-	rock_label.text = "✊\n×%d" % mc.get("rock", 0)
-	scissors_label.text = "✌\n×%d" % mc.get("scissors", 0)
-	paper_label.text = "✋\n×%d" % mc.get("paper", 0)
+	rock_label.text = "グー\n×%d" % mc.get("rock", 0)
+	scissors_label.text = "チョキ\n×%d" % mc.get("scissors", 0)
+	paper_label.text = "パー\n×%d" % mc.get("paper", 0)

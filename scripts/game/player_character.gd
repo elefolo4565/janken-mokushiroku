@@ -30,7 +30,7 @@ const BREATH_AMOUNT := 0.06
 # コマンド表示用のアイコンマップ（ゾーン制のため手は表示しない）
 const COMMAND_ICONS := {
 	"none": "",
-	"negotiate": "💰",
+	"negotiate": "金",
 }
 
 # アバターテクスチャキャッシュ（static相当）
@@ -65,7 +65,7 @@ func update_data(data: Dictionary) -> void:
 
 	var stars: int = data.get("stars", 0)
 	var gold: int = data.get("gold", 0)
-	star_label.text = "☆%d" % [stars]
+	star_label.text = "★%d" % [stars]
 
 	# 退場・ゾーン内・クリアの表示（テレポート中はmodulateを触らない）
 	if not _alive:

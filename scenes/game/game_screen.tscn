@@ -53,7 +53,7 @@ text = "全体:"
 [node name="RockTotalLabel" type="Label" parent="VBox/TopInfoBar/Margin/VBox/CardTotals"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "✊ 0"
+text = "グー 0"
 
 [node name="Sep1" type="VSeparator" parent="VBox/TopInfoBar/Margin/VBox/CardTotals"]
 layout_mode = 2
@@ -61,7 +61,7 @@ layout_mode = 2
 [node name="ScissorsTotalLabel" type="Label" parent="VBox/TopInfoBar/Margin/VBox/CardTotals"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "✌ 0"
+text = "チョキ 0"
 
 [node name="Sep2" type="VSeparator" parent="VBox/TopInfoBar/Margin/VBox/CardTotals"]
 layout_mode = 2
@@ -69,7 +69,7 @@ layout_mode = 2
 [node name="PaperTotalLabel" type="Label" parent="VBox/TopInfoBar/Margin/VBox/CardTotals"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "✋ 0"
+text = "パー 0"
 
 [node name="InfoRow" type="HBoxContainer" parent="VBox/TopInfoBar/Margin/VBox"]
 layout_mode = 2
@@ -86,7 +86,7 @@ layout_mode = 2
 [node name="StarsLabel" type="Label" parent="VBox/TopInfoBar/Margin/VBox/InfoRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "⭐×3"
+text = "★×3"
 
 [node name="Sep5" type="VSeparator" parent="VBox/TopInfoBar/Margin/VBox/InfoRow"]
 layout_mode = 2
@@ -94,7 +94,7 @@ layout_mode = 2
 [node name="GoldLabel" type="Label" parent="VBox/TopInfoBar/Margin/VBox/InfoRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "💰 100"
+text = "金 100"
 
 [node name="GameFieldContainer" type="SubViewportContainer" parent="VBox"]
 layout_mode = 2
@@ -159,7 +159,7 @@ offset_top = -70.0
 offset_right = -15.0
 offset_bottom = -15.0
 toggle_mode = true
-text = "💰 交渉"
+text = "金 交渉"
 
 [node name="BattleLog" type="Control" parent="."]
 layout_mode = 1
@@ -192,7 +192,7 @@ size_flags_horizontal = 3
 [node name="RockLabel" type="Label" parent="MyCardsBar/RockPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "✊
+text = "グー
 ×4"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -205,7 +205,7 @@ size_flags_horizontal = 3
 [node name="ScissorsLabel" type="Label" parent="MyCardsBar/ScissorsPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "✌
+text = "チョキ
 ×4"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -218,7 +218,7 @@ size_flags_horizontal = 3
 [node name="PaperLabel" type="Label" parent="MyCardsBar/PaperPanel"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "✋
+text = "パー
 ×4"
 horizontal_alignment = 1
 vertical_alignment = 1

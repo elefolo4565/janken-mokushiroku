@@ -40,10 +40,10 @@ func _display_results(results: Array) -> void:
 
 		var status_label := Label.new()
 		if r.get("cleared", false):
-			status_label.text = "クリア! ⭐%d 💰%d" % [r.get("stars", 0), r.get("gold", 0)]
+			status_label.text = "クリア! ★%d 金%d" % [r.get("stars", 0), r.get("gold", 0)]
 			status_label.add_theme_color_override("font_color", Color.GREEN)
 		elif r.get("alive", false):
-			status_label.text = "未ゴール ⭐%d 💰%d" % [r.get("stars", 0), r.get("gold", 0)]
+			status_label.text = "未ゴール ★%d 金%d" % [r.get("stars", 0), r.get("gold", 0)]
 			status_label.add_theme_color_override("font_color", Color.YELLOW)
 		else:
 			status_label.text = "退場"
