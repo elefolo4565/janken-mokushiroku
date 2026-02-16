@@ -13,6 +13,8 @@ const BattleZoneVisualScript := preload("res://scripts/game/battle_zone_visual.g
 @onready var field_bg: ColorRect = $FieldBG
 
 var _player_nodes: Dictionary = {} # playerId -> PlayerCharacter node
+var _smooth_zoom := 1.0
+const ZOOM_LERP_SPEED := 12.0
 
 func _ready() -> void:
 	# フィールド背景のサイズを設定
@@ -77,5 +79,7 @@ func _init_zones() -> void:
 func _update_camera() -> void:
 	var my_node: Node2D = _player_nodes.get(GameState.player_id)
 	if my_node:
-		# カメラを常にプレイヤー中心に追従（クランプなし）
 		camera.position = my_node.position
+	# ズームをスムーズに適用
+	_smooth_zoom = lerpf(_smooth_zoom, GameState.camera_zoom, minf(ZOOM_LERP_SPEED * get_process_delta_time(), 1.0))
+	camera.zoom = Vector2(_smooth_zoom, _smooth_zoom)

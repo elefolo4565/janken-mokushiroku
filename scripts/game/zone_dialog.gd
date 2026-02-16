@@ -17,6 +17,7 @@ const PlayerCharacter = preload("res://scripts/game/player_character.gd")
 @onready var opp_avatar: TextureRect = %OppAvatar
 @onready var opp_name_label: Label = %OppNameLabel
 @onready var opponent_info_label: Label = %OpponentInfoLabel
+@onready var card_totals_label: Label = %CardTotalsLabel
 
 @onready var fight_panel: Control = %FightPanel
 @onready var hand_rock_btn: Button = %HandRockBtn
@@ -42,6 +43,16 @@ func _ready() -> void:
 	hand_scissors_btn.pressed.connect(func() -> void: _select_hand("scissors"))
 	hand_paper_btn.pressed.connect(func() -> void: _select_hand("paper"))
 	confirm_fight_btn.pressed.connect(_on_confirm_fight)
+
+func _process(_delta: float) -> void:
+	if not visible:
+		return
+	var totals: Dictionary = GameState.card_totals
+	card_totals_label.text = "場: ✊%d  ✌%d  ✋%d" % [
+		totals.get("rock", 0),
+		totals.get("scissors", 0),
+		totals.get("paper", 0),
+	]
 
 func _fade_in() -> void:
 	if _fade_tween and _fade_tween.is_valid():

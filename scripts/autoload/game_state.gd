@@ -18,6 +18,8 @@ var field_height := 800.0
 var time_left := 0
 var victory_stars := 3
 var goal_gate := {"x": 400.0, "y": 50.0, "radius": 40.0}
+var time_limit := 300
+var cards_per_type := 4
 
 # 自分のカード情報
 var my_cards := {"rock": 0, "scissors": 0, "paper": 0}
@@ -45,6 +47,10 @@ var game_results: Array = []
 # ジョイスティック入力（VirtualJoystick → GameField間の共有）
 var input_vector := Vector2.ZERO
 
+# カメラズーム（ピンチ/マウスホイールで変更）
+var camera_zoom := 1.0
+var is_pinching := false
+
 func reset() -> void:
 	current_room = {}
 	is_host = false
@@ -60,6 +66,8 @@ func reset() -> void:
 	zone_opponent = {}
 	game_results = []
 	input_vector = Vector2.ZERO
+	camera_zoom = 1.0
+	is_pinching = false
 
 func get_my_total_cards() -> int:
 	return my_cards.get("rock", 0) + my_cards.get("scissors", 0) + my_cards.get("paper", 0)

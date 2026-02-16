@@ -92,6 +92,8 @@ func _handle_game_started(data: Dictionary) -> void:
 	GameState.battle_zones = settings.get("battleZones", [])
 	GameState.my_command = "none"
 	GameState.my_gold = settings.get("initialGold", 0)
+	GameState.time_limit = settings.get("timeLimit", 300)
+	GameState.cards_per_type = settings.get("cardsPerType", 4)
 
 	change_scene("res://scenes/game/game_screen.tscn")
 

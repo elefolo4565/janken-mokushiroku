@@ -15,11 +15,17 @@ var avatar_id := 0
 var _target_pos := Vector2.ZERO
 var _alive := true
 var _cleared := false
+var _was_jumping := false
+var _teleporting := false
+var _teleport_tween: Tween = null
+var _breath_time := 0.0
 
 const LERP_SPEED := 15.0
 const AVATAR_SIZE := 64
 const BODY_SIZE := 30.0
 const AVATAR_COUNT := 12
+const BREATH_SPEED := 2.5
+const BREATH_AMOUNT := 0.06
 
 # コマンド表示用のアイコンマップ（ゾーン制のため手は表示しない）
 const COMMAND_ICONS := {
@@ -40,6 +46,7 @@ func _ready() -> void:
 	name_label.text = player_name
 	body.texture = _get_avatar_texture(avatar_id)
 	body.scale = Vector2(BODY_SIZE / AVATAR_SIZE, BODY_SIZE / AVATAR_SIZE)
+	_breath_time = randf() * TAU
 
 func update_data(data: Dictionary) -> void:
 	_target_pos = Vector2(data.get("x", 0), data.get("y", 0))
@@ -47,10 +54,11 @@ func update_data(data: Dictionary) -> void:
 	_cleared = data.get("cleared", false)
 	var in_zone: bool = data.get("inZoneId", "") != "" and data.get("inZoneId", null) != null
 
-	# 瞬間移動: サーバーがjumping状態の場合は即座にターゲット位置へ移動
+	# テレポート: サーバーがjumping状態に入った瞬間にフェードアウト→移動→フェードイン
 	var server_jumping: bool = data.get("jumping", false)
-	if server_jumping:
-		position = _target_pos
+	if server_jumping and not _was_jumping:
+		_start_teleport()
+	_was_jumping = server_jumping
 
 	var cmd: String = data.get("command", "none")
 	command_label.text = COMMAND_ICONS.get(cmd, "")
@@ -59,12 +67,14 @@ func update_data(data: Dictionary) -> void:
 	var gold: int = data.get("gold", 0)
 	star_label.text = "☆%d" % [stars]
 
-	# 退場・ゾーン内・クリアの表示
+	# 退場・ゾーン内・クリアの表示（テレポート中はmodulateを触らない）
 	if not _alive:
 		visible = false
+	elif _teleporting:
+		visible = true
 	elif in_zone:
 		visible = true
-		modulate = Color(1.2, 1.2, 0.6) # 黄色っぽくゾーン内を表現
+		modulate = Color(1.2, 1.2, 0.6)
 	elif _cleared:
 		visible = true
 		modulate = Color(1.0, 1.0, 1.0, 0.4)
@@ -73,8 +83,34 @@ func update_data(data: Dictionary) -> void:
 		modulate = Color.WHITE
 
 func _process(delta: float) -> void:
+	# 呼吸アニメーション（常時）
+	_breath_time += delta * BREATH_SPEED
+	var breath := 1.0 + sin(_breath_time) * BREATH_AMOUNT
+	var base_s := BODY_SIZE / AVATAR_SIZE
+	body.scale = Vector2(base_s * breath, base_s * breath)
+
+	if _teleporting:
+		return
 	# 通常の補間移動
 	position = position.lerp(_target_pos, LERP_SPEED * delta)
+
+func _start_teleport() -> void:
+	_teleporting = true
+	if _teleport_tween and _teleport_tween.is_valid():
+		_teleport_tween.kill()
+	_teleport_tween = create_tween()
+	# フェードアウト（0.3秒）
+	_teleport_tween.tween_property(self, "modulate:a", 0.0, 0.3)
+	# 位置を移動
+	_teleport_tween.tween_callback(func() -> void:
+		position = _target_pos
+	)
+	# フェードイン（0.3秒）
+	_teleport_tween.tween_property(self, "modulate:a", 1.0, 0.3)
+	# 完了
+	_teleport_tween.tween_callback(func() -> void:
+		_teleporting = false
+	)
 
 ## アバターテクスチャ生成（色付き円形 + 顔パーツ）
 static func _get_avatar_texture(aid: int) -> ImageTexture:

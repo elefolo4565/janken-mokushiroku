@@ -2,6 +2,14 @@ extends Control
 
 ## ルーム一覧/作成画面
 
+# フィールドサイズプリセット: [幅, 高さ, ゾーン数, 表示名]
+const FIELD_PRESETS := [
+	{"width": 600, "height": 600, "zones": 2, "name": "小"},
+	{"width": 800, "height": 800, "zones": 4, "name": "中"},
+	{"width": 1200, "height": 1200, "zones": 8, "name": "大"},
+	{"width": 1600, "height": 1600, "zones": 16, "name": "特大"},
+]
+
 @onready var room_name_input: LineEdit = %RoomNameInput
 @onready var create_button: Button = %CreateButton
 @onready var room_list_container: VBoxContainer = %RoomListContainer
@@ -17,7 +25,7 @@ extends Control
 @onready var time_spinbox: SpinBox = %TimeSpinBox
 @onready var initial_gold_spinbox: SpinBox = %InitialGoldSpinBox
 @onready var victory_gold_spinbox: SpinBox = %VictoryGoldSpinBox
-@onready var zone_count_spinbox: SpinBox = %ZoneCountSpinBox
+@onready var field_size_option: OptionButton = %FieldSizeOption
 
 var _refresh_timer := 0.0
 
@@ -42,6 +50,7 @@ func _on_create_pressed() -> void:
 	if room_name.is_empty():
 		room_name = GameState.player_name + "の部屋"
 
+	var preset: Dictionary = FIELD_PRESETS[field_size_option.selected]
 	var settings := {
 		"cardsPerType": int(cards_spinbox.value),
 		"initialStars": int(stars_spinbox.value),
@@ -49,7 +58,9 @@ func _on_create_pressed() -> void:
 		"timeLimit": int(time_spinbox.value),
 		"initialGold": int(initial_gold_spinbox.value),
 		"victoryGold": int(victory_gold_spinbox.value),
-		"battleZoneCount": int(zone_count_spinbox.value),
+		"fieldWidth": preset["width"],
+		"fieldHeight": preset["height"],
+		"battleZoneCount": preset["zones"],
 	}
 	NetworkManager.create_room(room_name, settings)
 

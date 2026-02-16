@@ -8,6 +8,7 @@ const TICK_RATE = 20; // 20 ticks/sec
 const TICK_INTERVAL = 1000 / TICK_RATE;
 const GOAL_GATE = { x: 400, y: 50, radius: 40 }; // フィールド上部中央
 const JUMP_TICKS = 40; // ジャンプ所要時間: 2秒 × 20tick/sec
+const FREEZE_TICKS = 100; // ゲーム開始演出: 5秒 × 20tick/sec
 
 export class GameLoop {
   constructor(room) {
@@ -89,6 +90,12 @@ export class GameLoop {
 
     const dt = TICK_INTERVAL / 1000; // 秒単位
     this.tick++;
+
+    // フリーズ期間（ゲーム開始演出中）: 移動・タイマーを停止し状態のみ配信
+    if (this.tick <= FREEZE_TICKS) {
+      this.broadcastState();
+      return;
+    }
 
     // 時間経過
     this.timeLeft -= dt;

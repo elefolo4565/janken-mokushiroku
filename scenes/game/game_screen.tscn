@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c6game0001"]
+[gd_scene load_steps=10 format=3 uid="uid://c6game0001"]
 
 [ext_resource type="Script" path="res://scripts/game/game_screen.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/game/top_info_bar.gd" id="2_topbar"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://c8trade001" path="res://scenes/game/trade_dialog.tscn" id="7_trade"]
 [ext_resource type="Script" path="res://scripts/game/virtual_joystick.gd" id="8_joystick"]
 [ext_resource type="PackedScene" uid="uid://c9zone001" path="res://scenes/game/zone_dialog.tscn" id="9_zone"]
+[ext_resource type="Script" path="res://scripts/game/my_cards_bar.gd" id="10_mycards"]
 
 [node name="GameScreen" type="Control"]
 layout_mode = 3
@@ -28,7 +29,7 @@ grow_vertical = 2
 
 [node name="TopInfoBar" type="PanelContainer" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 80)
 script = ExtResource("2_topbar")
 
 [node name="Margin" type="MarginContainer" parent="VBox/TopInfoBar"]
@@ -95,14 +96,6 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "💰 100"
 
-[node name="Sep4" type="VSeparator" parent="VBox/TopInfoBar/Margin/VBox/InfoRow"]
-layout_mode = 2
-
-[node name="MyCardsLabel" type="Label" parent="VBox/TopInfoBar/Margin/VBox/InfoRow"]
-unique_name_in_owner = true
-layout_mode = 2
-text = "✊4 ✌4 ✋4"
-
 [node name="GameFieldContainer" type="SubViewportContainer" parent="VBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -148,10 +141,10 @@ vertical_alignment = 1
 layout_mode = 1
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = -255.0
-offset_right = 155.0
-offset_bottom = -115.0
+offset_left = 10.0
+offset_top = -310.0
+offset_right = 210.0
+offset_bottom = -110.0
 mouse_filter = 2
 script = ExtResource("8_joystick")
 
@@ -175,6 +168,61 @@ offset_top = 125.0
 offset_bottom = 280.0
 mouse_filter = 2
 script = ExtResource("6_battlelog")
+
+[node name="MyCardsBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -270.0
+offset_top = -90.0
+offset_right = 270.0
+offset_bottom = -10.0
+grow_horizontal = 2
+alignment = 1
+theme_override_constants/separation = 8
+mouse_filter = 2
+script = ExtResource("10_mycards")
+
+[node name="RockPanel" type="PanelContainer" parent="MyCardsBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RockLabel" type="Label" parent="MyCardsBar/RockPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✊
+×4"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="ScissorsPanel" type="PanelContainer" parent="MyCardsBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScissorsLabel" type="Label" parent="MyCardsBar/ScissorsPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✌
+×4"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 28
+
+[node name="PaperPanel" type="PanelContainer" parent="MyCardsBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PaperLabel" type="Label" parent="MyCardsBar/PaperPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✋
+×4"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 28
 
 [node name="TradeDialog" parent="." instance=ExtResource("7_trade")]
 

@@ -8,7 +8,6 @@ extends PanelContainer
 @onready var time_label: Label = %TimeLabel
 @onready var stars_label: Label = %StarsLabel
 @onready var gold_label: Label = %GoldLabel
-@onready var my_cards_label: Label = %MyCardsLabel
 
 func _process(_delta: float) -> void:
 	if not GameState.in_game:
@@ -31,11 +30,3 @@ func _process(_delta: float) -> void:
 
 	# 自分のゴールド
 	gold_label.text = "💰 %d" % GameState.my_gold
-
-	# 自分のカード内訳
-	var mc: Dictionary = GameState.my_cards
-	my_cards_label.text = "✊%d ✌%d ✋%d" % [
-		mc.get("rock", 0),
-		mc.get("scissors", 0),
-		mc.get("paper", 0),
-	]

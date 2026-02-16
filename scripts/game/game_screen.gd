@@ -3,15 +3,133 @@ extends Control
 ## メインゲーム画面
 ## 2分割: TopInfoBar / GameField + オーバーレイUI
 
+const ZOOM_MIN := 0.5
+const ZOOM_MAX := 2.0
+const ZOOM_WHEEL_FACTOR := 1.1
+const FREEZE_DURATION := 5.0
+
 @onready var top_info_bar: Control = $VBox/TopInfoBar
 @onready var game_field: SubViewportContainer = $VBox/GameFieldContainer
 @onready var battle_log: Control = $BattleLog
 @onready var zone_dialog: Control = $ZoneDialog
 @onready var negotiate_btn: Button = $NegotiateButton
 
+var _pinch_touches: Dictionary = {}
+var _pinch_start_dist := 0.0
+var _pinch_start_zoom := 1.0
+
 func _ready() -> void:
 	NetworkManager.message_received.connect(_on_message)
 	negotiate_btn.toggled.connect(_on_negotiate_toggled)
+	_show_start_overlay()
+
+func _show_start_overlay() -> void:
+	# 全画面暗幕（入力ブロック）
+	var overlay := ColorRect.new()
+	overlay.name = "StartOverlay"
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0, 0, 0, 0.85)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+
+	# 中央配置用コンテナ
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 12)
+	center.add_child(vbox)
+
+	# タイトル
+	var title := Label.new()
+	title.text = "GAME START"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 40)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	vbox.add_child(title)
+
+	# セパレータ
+	var sep := HSeparator.new()
+	sep.custom_minimum_size.x = 300
+	vbox.add_child(sep)
+
+	# 勝利条件
+	var minutes := GameState.time_limit / 60
+	var seconds := GameState.time_limit % 60
+	var rules_text := ""
+	rules_text += "[ 勝利条件 ]\n"
+	rules_text += "☆ %d 以上  &  💰 %d 以上\n" % [GameState.victory_stars, GameState.victory_gold]
+	rules_text += "カードを全て使い切りゴールゲートへ！\n"
+	rules_text += "\n"
+	rules_text += "手札: ✊✌✋  各 %d 枚\n" % GameState.cards_per_type
+	rules_text += "制限時間: %d:%02d" % [minutes, seconds]
+
+	var rules := Label.new()
+	rules.text = rules_text
+	rules.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rules.add_theme_font_size_override("font_size", 22)
+	vbox.add_child(rules)
+
+	# カウントダウン
+	var countdown := Label.new()
+	countdown.name = "Countdown"
+	countdown.text = "5"
+	countdown.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	countdown.add_theme_font_size_override("font_size", 60)
+	countdown.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	vbox.add_child(countdown)
+
+	# カウントダウンアニメーション
+	var tw := create_tween()
+	for i in range(4, 0, -1):
+		tw.tween_interval(1.0)
+		tw.tween_callback(func() -> void: countdown.text = str(i))
+	tw.tween_interval(1.0)
+	# フェードアウト
+	tw.tween_property(overlay, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(func() -> void: overlay.queue_free())
+
+func _input(event: InputEvent) -> void:
+	# ピンチズーム（スマホ）
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			_pinch_touches[event.index] = event.position
+		else:
+			_pinch_touches.erase(event.index)
+		# 2本指になった瞬間にピンチ開始
+		if _pinch_touches.size() == 2:
+			var pts: Array = _pinch_touches.values()
+			_pinch_start_dist = (pts[0] as Vector2).distance_to(pts[1] as Vector2)
+			_pinch_start_zoom = GameState.camera_zoom
+			GameState.is_pinching = true
+		elif _pinch_touches.size() < 2:
+			GameState.is_pinching = false
+		# 2本指以上のタッチイベントはジョイスティックに渡さない
+		if _pinch_touches.size() >= 2:
+			get_viewport().set_input_as_handled()
+
+	elif event is InputEventScreenDrag:
+		if _pinch_touches.has(event.index):
+			_pinch_touches[event.index] = event.position
+		if _pinch_touches.size() >= 2:
+			var pts: Array = _pinch_touches.values()
+			var dist := (pts[0] as Vector2).distance_to(pts[1] as Vector2)
+			if _pinch_start_dist > 10.0:
+				var ratio := dist / _pinch_start_dist
+				GameState.camera_zoom = clampf(_pinch_start_zoom * ratio, ZOOM_MIN, ZOOM_MAX)
+			get_viewport().set_input_as_handled()
+
+func _unhandled_input(event: InputEvent) -> void:
+	# マウスホイールズーム（PC）
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			GameState.camera_zoom = clampf(GameState.camera_zoom * ZOOM_WHEEL_FACTOR, ZOOM_MIN, ZOOM_MAX)
+			get_viewport().set_input_as_handled()
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			GameState.camera_zoom = clampf(GameState.camera_zoom / ZOOM_WHEEL_FACTOR, ZOOM_MIN, ZOOM_MAX)
+			get_viewport().set_input_as_handled()
 
 func _on_message(data: Dictionary) -> void:
 	match data.get("type", ""):

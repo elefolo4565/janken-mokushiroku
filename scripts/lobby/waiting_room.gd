@@ -49,13 +49,16 @@ func _update_display() -> void:
 
 	# 設定表示
 	var settings: Dictionary = room.get("settings", {})
-	settings_label.text = "カード: 各%d枚 | 星: %d個 | 勝利: 星%d+💰%d | 制限: %d秒 | ゾーン: %d" % [
+	var fw: int = settings.get("fieldWidth", 800)
+	var zone_count: int = settings.get("battleZoneCount", 4)
+	var field_name := _get_field_size_name(fw, zone_count)
+	settings_label.text = "カード: 各%d枚 | 星: %d個 | 勝利: 星%d+💰%d | 制限: %d秒 | %s" % [
 		settings.get("cardsPerType", 4),
 		settings.get("initialStars", 3),
 		settings.get("victoryStars", 3),
 		settings.get("victoryGold", 50),
 		settings.get("timeLimit", 300),
-		settings.get("battleZoneCount", 4),
+		field_name,
 	]
 
 	# ホストのみ開始ボタンとAIボタンを表示
@@ -83,3 +86,13 @@ func _update_display() -> void:
 	# AIがいない場合は削除ボタンを非表示
 	if not has_ai:
 		remove_ai_button.visible = false
+
+static func _get_field_size_name(fw: int, zones: int) -> String:
+	if fw <= 600:
+		return "小(ゾーン%d)" % zones
+	elif fw <= 800:
+		return "中(ゾーン%d)" % zones
+	elif fw <= 1200:
+		return "大(ゾーン%d)" % zones
+	else:
+		return "特大(ゾーン%d)" % zones

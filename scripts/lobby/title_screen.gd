@@ -38,10 +38,10 @@ func _create_avatar_buttons() -> void:
 		btn.toggle_mode = true
 		btn.custom_minimum_size = Vector2(AVATAR_PREVIEW_SIZE + 10, AVATAR_PREVIEW_SIZE + 10)
 
-		# アバタープレビュー用のTextureRect
+		# アバタープレビュー用のTextureRect（ボタン内で中央配置）
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = _generate_avatar_preview(i)
-		tex_rect.custom_minimum_size = Vector2(AVATAR_PREVIEW_SIZE, AVATAR_PREVIEW_SIZE)
+		tex_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		btn.add_child(tex_rect)
@@ -50,8 +50,8 @@ func _create_avatar_buttons() -> void:
 		avatar_row.add_child(btn)
 		_avatar_buttons.append(btn)
 
-	# 初期選択をハイライト
-	_update_avatar_highlight()
+	# 初期選択をハイライト（アニメーションなし）
+	_update_avatar_highlight(false)
 
 func _generate_avatar_preview(aid: int) -> ImageTexture:
 	var s := AVATAR_PREVIEW_SIZE
@@ -101,9 +101,21 @@ func _on_avatar_selected(aid: int) -> void:
 	GameState.player_avatar_id = aid
 	_update_avatar_highlight()
 
-func _update_avatar_highlight() -> void:
+func _update_avatar_highlight(animate := true) -> void:
 	for i in range(_avatar_buttons.size()):
-		_avatar_buttons[i].button_pressed = (i == _selected_avatar_id)
+		var btn := _avatar_buttons[i]
+		var selected := (i == _selected_avatar_id)
+		btn.button_pressed = selected
+		var target_scale := Vector2(1.3, 1.3) if selected else Vector2(1.0, 1.0)
+		var target_mod := Color.WHITE if selected else Color(0.5, 0.5, 0.5, 0.6)
+		btn.z_index = 1 if selected else 0
+		if animate:
+			var tw := create_tween().set_parallel(true)
+			tw.tween_property(btn, "scale", target_scale, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_property(btn, "modulate", target_mod, 0.12)
+		else:
+			btn.scale = target_scale
+			btn.modulate = target_mod
 
 func _on_connect_pressed() -> void:
 	var player_name := name_input.text.strip_edges()
@@ -152,4 +164,4 @@ func _load_settings() -> void:
 			name_input.text = saved_name
 		_selected_avatar_id = config.get_value("player", "avatar_id", 0)
 		GameState.player_avatar_id = _selected_avatar_id
-		_update_avatar_highlight()
+		_update_avatar_highlight(false)
