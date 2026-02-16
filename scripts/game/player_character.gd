@@ -21,14 +21,6 @@ const AVATAR_SIZE := 64
 const BODY_SIZE := 30.0
 const AVATAR_COUNT := 12
 
-# ジャンプアニメーション
-var _jumping := false
-var _jump_start_pos := Vector2.ZERO
-var _jump_end_pos := Vector2.ZERO
-var _jump_time := 0.0
-const JUMP_DURATION := 2.0
-const JUMP_HEIGHT := 200.0
-
 # コマンド表示用のアイコンマップ（ゾーン制のため手は表示しない）
 const COMMAND_ICONS := {
 	"none": "",
@@ -55,15 +47,10 @@ func update_data(data: Dictionary) -> void:
 	_cleared = data.get("cleared", false)
 	var in_zone: bool = data.get("inZoneId", "") != "" and data.get("inZoneId", null) != null
 
-	# ジャンプ開始検出
+	# 瞬間移動: サーバーがjumping状態の場合は即座にターゲット位置へ移動
 	var server_jumping: bool = data.get("jumping", false)
-	if server_jumping and not _jumping:
-		_jumping = true
-		_jump_start_pos = position
-		_jump_end_pos = _target_pos
-		_jump_time = 0.0
-	elif not server_jumping:
-		_jumping = false
+	if server_jumping:
+		position = _target_pos
 
 	var cmd: String = data.get("command", "none")
 	command_label.text = COMMAND_ICONS.get(cmd, "")
@@ -86,39 +73,56 @@ func update_data(data: Dictionary) -> void:
 		modulate = Color.WHITE
 
 func _process(delta: float) -> void:
-	if _jumping:
-		_jump_time += delta
-		var t := clampf(_jump_time / JUMP_DURATION, 0.0, 1.0)
-		# 地面上の位置を線形補間
-		var ground_pos := _jump_start_pos.lerp(_jump_end_pos, t)
-		# 放物線アーク（上方向=負のY）
-		var arc_offset := -JUMP_HEIGHT * 4.0 * t * (1.0 - t)
-		position = ground_pos + Vector2(0, arc_offset)
-		if t >= 1.0:
-			_jumping = false
-			position = _jump_end_pos
-	else:
-		# 通常の補間移動
-		position = position.lerp(_target_pos, LERP_SPEED * delta)
+	# 通常の補間移動
+	position = position.lerp(_target_pos, LERP_SPEED * delta)
 
-## アバターテクスチャ生成（プレースホルダー: 色付き円形）
+## アバターテクスチャ生成（色付き円形 + 顔パーツ）
 static func _get_avatar_texture(aid: int) -> ImageTexture:
 	if _avatar_cache.has(aid):
 		return _avatar_cache[aid]
 
-	var img := Image.create(AVATAR_SIZE, AVATAR_SIZE, false, Image.FORMAT_RGBA8)
+	var s := AVATAR_SIZE
+	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
 	var hue := float(aid) / float(AVATAR_COUNT)
-	var color := Color.from_hsv(hue, 0.7, 0.9)
-	var center := Vector2(AVATAR_SIZE / 2.0, AVATAR_SIZE / 2.0)
-	var radius := AVATAR_SIZE / 2.0 - 1.0
+	var body_color := Color.from_hsv(hue, 0.7, 0.9)
+	var center := Vector2(s / 2.0, s / 2.0)
+	var radius := s / 2.0 - 1.0
 
-	for y in range(AVATAR_SIZE):
-		for x in range(AVATAR_SIZE):
-			var dist := Vector2(x + 0.5, y + 0.5).distance_to(center)
-			if dist <= radius:
-				img.set_pixel(x, y, color)
-			else:
+	# 顔パーツの位置
+	var left_eye := Vector2(s * 0.34, s * 0.38)
+	var right_eye := Vector2(s * 0.66, s * 0.38)
+	var eye_r_white := s * 0.08
+	var eye_r_pupil := s * 0.04
+	var mouth_center := Vector2(s * 0.5, s * 0.42)
+	var mouth_r := s * 0.2
+	var mouth_thick := maxf(s * 0.03, 1.0)
+	var mouth_min_y := s * 0.55
+	var white := Color.WHITE
+	var dark := Color(0.15, 0.15, 0.15)
+
+	for y in range(s):
+		for x in range(s):
+			var px := Vector2(x + 0.5, y + 0.5)
+			var dist := px.distance_to(center)
+			if dist > radius:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
+				continue
+
+			var c := body_color
+			# 白目
+			var dl := px.distance_to(left_eye)
+			var dr := px.distance_to(right_eye)
+			if dl <= eye_r_white or dr <= eye_r_white:
+				c = white
+			# 瞳
+			if dl <= eye_r_pupil or dr <= eye_r_pupil:
+				c = dark
+			# 口（スマイルアーク）
+			var dm := px.distance_to(mouth_center)
+			if absf(dm - mouth_r) <= mouth_thick and px.y > mouth_min_y:
+				c = dark
+
+			img.set_pixel(x, y, c)
 
 	var tex := ImageTexture.create_from_image(img)
 	_avatar_cache[aid] = tex

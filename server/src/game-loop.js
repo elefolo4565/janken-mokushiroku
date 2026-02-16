@@ -187,6 +187,13 @@ export class GameLoop {
       return;
     }
 
+    // 7.5. 敗北チェック: 対戦相手がいない（他全員ゴールか退場）のにクリア条件未達成
+    if (activePlayers.length === 1 && !activePlayers[0].canGoal) {
+      this.eliminatePlayer(activePlayers[0].id, 'no_opponents');
+      this.endGame();
+      return;
+    }
+
     // 8. 状態ブロードキャスト
     this.broadcastState();
   }
@@ -237,6 +244,7 @@ export class GameLoop {
         stars: p2.stars,
         gold: p2.gold,
         cardsLeft: p2.totalCards,
+        avatarId: p2.avatarId,
       },
     });
     p2.send({
@@ -248,6 +256,7 @@ export class GameLoop {
         stars: p1.stars,
         gold: p1.gold,
         cardsLeft: p1.totalCards,
+        avatarId: p1.avatarId,
       },
     });
   }

@@ -58,7 +58,11 @@ func _on_negotiate_toggled(pressed: bool) -> void:
 func _on_player_eliminated(data: Dictionary) -> void:
 	var pid: String = data.get("playerId", "")
 	if pid == GameState.player_id:
-		battle_log.show_elimination("あなたは退場しました...")
+		var reason: String = data.get("reason", "")
+		if reason == "no_opponents":
+			battle_log.show_elimination("対戦相手がいません…敗北！")
+		else:
+			battle_log.show_elimination("あなたは退場しました...")
 
 func _on_player_cleared(data: Dictionary) -> void:
 	var pid: String = data.get("playerId", "")

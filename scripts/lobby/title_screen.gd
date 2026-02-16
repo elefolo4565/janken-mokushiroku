@@ -54,20 +54,45 @@ func _create_avatar_buttons() -> void:
 	_update_avatar_highlight()
 
 func _generate_avatar_preview(aid: int) -> ImageTexture:
-	var size := AVATAR_PREVIEW_SIZE
-	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var s := AVATAR_PREVIEW_SIZE
+	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
 	var hue := float(aid) / float(AVATAR_COUNT)
-	var color := Color.from_hsv(hue, 0.7, 0.9)
-	var center := Vector2(size / 2.0, size / 2.0)
-	var radius := size / 2.0 - 1.0
+	var body_color := Color.from_hsv(hue, 0.7, 0.9)
+	var center := Vector2(s / 2.0, s / 2.0)
+	var radius := s / 2.0 - 1.0
 
-	for y in range(size):
-		for x in range(size):
-			var dist := Vector2(x + 0.5, y + 0.5).distance_to(center)
-			if dist <= radius:
-				img.set_pixel(x, y, color)
-			else:
+	# 顔パーツの位置
+	var left_eye := Vector2(s * 0.34, s * 0.38)
+	var right_eye := Vector2(s * 0.66, s * 0.38)
+	var eye_r_white := s * 0.08
+	var eye_r_pupil := s * 0.04
+	var mouth_center := Vector2(s * 0.5, s * 0.42)
+	var mouth_r := s * 0.2
+	var mouth_thick := maxf(s * 0.03, 1.0)
+	var mouth_min_y := s * 0.55
+	var white := Color.WHITE
+	var dark := Color(0.15, 0.15, 0.15)
+
+	for y in range(s):
+		for x in range(s):
+			var px := Vector2(x + 0.5, y + 0.5)
+			var dist := px.distance_to(center)
+			if dist > radius:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
+				continue
+
+			var c := body_color
+			var dl := px.distance_to(left_eye)
+			var dr := px.distance_to(right_eye)
+			if dl <= eye_r_white or dr <= eye_r_white:
+				c = white
+			if dl <= eye_r_pupil or dr <= eye_r_pupil:
+				c = dark
+			var dm := px.distance_to(mouth_center)
+			if absf(dm - mouth_r) <= mouth_thick and px.y > mouth_min_y:
+				c = dark
+
+			img.set_pixel(x, y, c)
 
 	return ImageTexture.create_from_image(img)
 

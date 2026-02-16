@@ -1,7 +1,7 @@
 extends Control
 
-## ゾーン内対戦ダイアログ
-## ゾーンで2名マッチした際に表示される
+## ゾーン内対戦ダイアログ（格闘ゲーム風VS画面）
+## ゾーンで2名マッチした際に全画面黒背景でフェードイン表示
 
 const HAND_ICONS := {
 	"rock": "✊",
@@ -9,13 +9,15 @@ const HAND_ICONS := {
 	"paper": "✋",
 }
 
-@onready var opponent_name_label: Label = %OpponentNameLabel
-@onready var opponent_info_label: Label = %OpponentInfoLabel
-@onready var choice_panel: Control = %ChoicePanel
-@onready var fight_button: Button = %FightButton
-@onready var leave_button: Button = %LeaveButton
+const PlayerCharacter = preload("res://scripts/game/player_character.gd")
 
-# 勝負選択パネル（fight_button押下後に表示）
+@onready var bg: ColorRect = %BG
+@onready var my_avatar: TextureRect = %MyAvatar
+@onready var my_name_label: Label = %MyNameLabel
+@onready var opp_avatar: TextureRect = %OppAvatar
+@onready var opp_name_label: Label = %OppNameLabel
+@onready var opponent_info_label: Label = %OpponentInfoLabel
+
 @onready var fight_panel: Control = %FightPanel
 @onready var hand_rock_btn: Button = %HandRockBtn
 @onready var hand_scissors_btn: Button = %HandScissorsBtn
@@ -30,31 +32,50 @@ var _selected_hand := ""
 var _zone_id := ""
 var _result_container: VBoxContainer = null
 var _cancel_tween: Tween = null
+var _fade_tween: Tween = null
 
 func _ready() -> void:
 	visible = false
 	fight_panel.visible = false
 	waiting_label.visible = false
-	fight_button.pressed.connect(_on_fight)
-	leave_button.pressed.connect(_on_leave)
 	hand_rock_btn.pressed.connect(func() -> void: _select_hand("rock"))
 	hand_scissors_btn.pressed.connect(func() -> void: _select_hand("scissors"))
 	hand_paper_btn.pressed.connect(func() -> void: _select_hand("paper"))
 	confirm_fight_btn.pressed.connect(_on_confirm_fight)
 
+func _fade_in() -> void:
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()
+	bg.modulate.a = 0.0
+	_panel_vbox.modulate.a = 0.0
+	visible = true
+	_fade_tween = create_tween()
+	_fade_tween.set_parallel(true)
+	_fade_tween.tween_property(bg, "modulate:a", 1.0, 0.25)
+	_fade_tween.tween_property(_panel_vbox, "modulate:a", 1.0, 0.3).set_delay(0.1)
+
 func show_match(data: Dictionary) -> void:
 	_kill_cancel_tween()
 	_zone_id = data.get("zoneId", "")
 	var opp: Dictionary = data.get("opponent", {})
-	opponent_name_label.text = opp.get("name", "???")
+
+	# 自分のアバターと名前
+	my_avatar.texture = PlayerCharacter._get_avatar_texture(GameState.player_avatar_id)
+	my_name_label.text = GameState.player_name
+
+	# 相手のアバターと名前
+	var opp_avatar_id: int = opp.get("avatarId", 0)
+	opp_avatar.texture = PlayerCharacter._get_avatar_texture(opp_avatar_id)
+	opp_name_label.text = opp.get("name", "???")
+
+	# 相手情報
 	opponent_info_label.text = "⭐ %d  💰 %d  カード残: %d枚" % [
 		opp.get("stars", 0),
 		opp.get("gold", 0),
 		opp.get("cardsLeft", 0),
 	]
 
-	# パネル状態をリセット（即座に手選択へ）
-	choice_panel.visible = false
+	# 即座に手選択パネルを表示
 	fight_panel.visible = true
 	waiting_label.visible = false
 	_selected_hand = ""
@@ -75,11 +96,10 @@ func show_match(data: Dictionary) -> void:
 	bet_spin.max_value = GameState.my_gold
 	bet_spin.value = 0
 
-	visible = true
+	_fade_in()
 
 func show_result(data: Dictionary) -> void:
 	# 既存パネルを全て非表示
-	choice_panel.visible = false
 	fight_panel.visible = false
 	waiting_label.visible = false
 
@@ -167,18 +187,21 @@ func show_result(data: Dictionary) -> void:
 		detail_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 
 	# --- アニメーション ---
-	# 手アイコン: 左右からスライドイン
-	my_hand_label.position.x = -200.0
 	my_hand_label.modulate.a = 0.0
-	opp_hand_label.position.x = 200.0
 	opp_hand_label.modulate.a = 0.0
+
+	await get_tree().process_frame
+	var my_orig_x := my_hand_label.position.x
+	var opp_orig_x := opp_hand_label.position.x
+	my_hand_label.position.x = my_orig_x - 200.0
+	opp_hand_label.position.x = opp_orig_x + 200.0
 
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(my_hand_label, "position:x", 0.0, 0.4) \
+	tween.tween_property(my_hand_label, "position:x", my_orig_x, 0.4) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(my_hand_label, "modulate:a", 1.0, 0.3)
-	tween.tween_property(opp_hand_label, "position:x", 0.0, 0.4) \
+	tween.tween_property(opp_hand_label, "position:x", opp_orig_x, 0.4) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(opp_hand_label, "modulate:a", 1.0, 0.3)
 
@@ -199,22 +222,19 @@ func show_result(data: Dictionary) -> void:
 	tween.tween_interval(3.0)
 	tween.tween_callback(_on_result_finished)
 
-	# ダイアログ表示を保証
 	visible = true
 
 func _on_result_finished() -> void:
-	hide_dialog()
-	GameState.in_zone_match = false
-	GameState.zone_opponent = {}
+	_fade_out_and_hide(func() -> void:
+		GameState.in_zone_match = false
+		GameState.zone_opponent = {}
+	)
 
 func show_cancelled(reason: String) -> void:
-	# 既存パネルを全て非表示
-	choice_panel.visible = false
 	fight_panel.visible = false
 	waiting_label.visible = false
 	_clear_result_container()
 
-	# キャンセル理由テキスト
 	var reason_text := ""
 	match reason:
 		"timeout":
@@ -230,14 +250,15 @@ func show_cancelled(reason: String) -> void:
 	waiting_label.visible = true
 	visible = true
 
-	# 2秒後に自動クローズ
+	# 2秒後に自動クローズ（フェードアウト）
 	_kill_cancel_tween()
 	_cancel_tween = create_tween()
 	_cancel_tween.tween_interval(2.0)
 	_cancel_tween.tween_callback(func() -> void:
-		hide_dialog()
-		GameState.in_zone_match = false
-		GameState.zone_opponent = {}
+		_fade_out_and_hide(func() -> void:
+			GameState.in_zone_match = false
+			GameState.zone_opponent = {}
+		)
 	)
 
 func _kill_cancel_tween() -> void:
@@ -250,23 +271,36 @@ func _clear_result_container() -> void:
 		_result_container.queue_free()
 		_result_container = null
 
+func _fade_out_and_hide(on_complete: Callable = Callable()) -> void:
+	_kill_cancel_tween()
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()
+	_fade_tween = create_tween()
+	_fade_tween.set_parallel(true)
+	_fade_tween.tween_property(bg, "modulate:a", 0.0, 0.4)
+	_fade_tween.tween_property(_panel_vbox, "modulate:a", 0.0, 0.3)
+	_fade_tween.set_parallel(false)
+	_fade_tween.tween_callback(func() -> void:
+		visible = false
+		fight_panel.visible = false
+		waiting_label.visible = false
+		_clear_result_container()
+		_selected_hand = ""
+		_fade_tween = null
+		if on_complete.is_valid():
+			on_complete.call()
+	)
+
 func hide_dialog() -> void:
 	_kill_cancel_tween()
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()
+		_fade_tween = null
 	visible = false
 	fight_panel.visible = false
 	waiting_label.visible = false
 	_clear_result_container()
 	_selected_hand = ""
-
-func _on_fight() -> void:
-	fight_panel.visible = true
-	fight_button.visible = false
-
-func _on_leave() -> void:
-	NetworkManager.send_zone_leave()
-	hide_dialog()
-	GameState.in_zone_match = false
-	GameState.zone_opponent = {}
 
 func _select_hand(hand: String) -> void:
 	_selected_hand = hand
@@ -279,7 +313,6 @@ func _on_confirm_fight() -> void:
 		return
 	NetworkManager.send_zone_fight(_selected_hand, int(bet_spin.value))
 	# 「待機中...」表示に切り替え
-	choice_panel.visible = false
 	fight_panel.visible = false
 	waiting_label.visible = true
 	waiting_label.text = "相手の選択を待っています..."
