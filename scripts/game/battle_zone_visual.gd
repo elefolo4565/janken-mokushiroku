@@ -2,6 +2,8 @@ extends Node2D
 
 ## 勝負ゾーンの視覚的表現（円形の光るエリア）
 
+const FONT := preload("res://assets/fonts/DelaGothicOne-Regular.ttf")
+
 var radius := 60.0
 var zone_id := ""
 var _state := "empty"
@@ -28,12 +30,11 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, radius, color)
 	draw_arc(Vector2.ZERO, radius, 0, TAU, 64, color * 1.8, 2.0)
 
-	# ゾーンラベル
-	var label_color := Color(1, 1, 1, 0.4)
-	match _state:
-		"empty":
-			pass
-		"waiting":
-			label_color = Color(1, 0.9, 0.3, 0.6)
-		"matched":
-			label_color = Color(1, 0.4, 0.4, 0.6)
+	# 「対戦中」ラベル表示
+	if _state == "matched":
+		var font: Font = FONT
+		var font_size := 16
+		var text := "対戦中"
+		var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
+		var text_pos := Vector2(-text_size.x / 2, -radius - 8)
+		draw_string(font, text_pos, text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, Color(1, 0.3, 0.3, 0.9))

@@ -118,11 +118,8 @@ export class BattleZoneManager {
       // 3. マッチングタイマー更新
       if (zone.matchedPair) {
         zone.matchedPair.timer -= dt;
-        if (zone.matchedPair.timer <= 0) {
-          events.push({ type: 'zone_timeout', zone });
-        }
 
-        // 両者のzoneFightChoiceが揃ったら勝負判定
+        // 両者のzoneFightChoiceが揃ったら勝負判定（タイムアウトより優先）
         if (!zone.matchedPair.resolved) {
           const p1 = players.get(zone.matchedPair.p1Id);
           const p2 = players.get(zone.matchedPair.p2Id);
@@ -134,7 +131,11 @@ export class BattleZoneManager {
               p1Id: zone.matchedPair.p1Id,
               p2Id: zone.matchedPair.p2Id,
             });
+          } else if (zone.matchedPair.timer <= 0) {
+            events.push({ type: 'zone_timeout', zone });
           }
+        } else if (zone.matchedPair.timer <= 0) {
+          events.push({ type: 'zone_timeout', zone });
         }
       }
 

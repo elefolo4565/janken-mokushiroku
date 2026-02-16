@@ -32,6 +32,8 @@ window/handheld/orientation=1
 
 [gui]
 
+theme/custom="res://assets/theme.tres"
+theme/default_font="res://assets/fonts/DelaGothicOne-Regular.ttf"
 theme/default_font_size=24
 
 [input_devices]

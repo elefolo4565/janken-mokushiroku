@@ -29,6 +29,7 @@ export class AIController {
     this._thinkInterval = 0.5 + Math.random() * 1.0;
     this._wanderAngle = Math.random() * Math.PI * 2;
     this._zoneDecisionMade = false; // ゾーンマッチ中の判断済みフラグ
+    this._zoneDecisionDelay = 0;   // ゾーン勝負の思考ディレイ（秒）
   }
 
   /**
@@ -36,6 +37,7 @@ export class AIController {
    * @returns {object|null} アクション（{ type: 'leave' } でゾーン離脱）
    */
   update(allPlayers, settings, dt, zoneManager) {
+    this._dt = dt;
     if (!this.player.alive || this.player.cleared) {
       this.player.inputDx = 0;
       this.player.inputDy = 0;
@@ -51,6 +53,7 @@ export class AIController {
 
     // マッチ解除されたらフラグリセット
     this._zoneDecisionMade = false;
+    this._zoneDecisionDelay = 0;
 
     this._thinkTimer -= dt;
     if (this._thinkTimer <= 0) {
@@ -70,17 +73,20 @@ export class AIController {
 
     // 既に判断済み（選択送信済み or 離脱判断済み）
     if (this._zoneDecisionMade) return null;
+
+    // 思考ディレイ（3〜5秒）
+    if (this._zoneDecisionDelay === 0) {
+      this._zoneDecisionDelay = 3 + Math.random() * 2;
+    }
+    this._zoneDecisionDelay -= this._dt;
+    if (this._zoneDecisionDelay > 0) return null;
+
     this._zoneDecisionMade = true;
 
     const opponent = allPlayers.get(me.zoneMatchedWith);
     if (!opponent) return { type: 'leave' };
 
-    // 勝負するかどうか判断
-    if (!this._shouldFight(opponent)) {
-      return { type: 'leave' };
-    }
-
-    // 手を選択
+    // 手を選択（カードがなければ離脱）
     const hand = this._chooseHand();
     if (!hand) return { type: 'leave' };
 
@@ -89,25 +95,6 @@ export class AIController {
 
     me.zoneFightChoice = { hand, bet };
     return null;
-  }
-
-  /**
-   * 勝負すべきか判断
-   */
-  _shouldFight(opponent) {
-    const me = this.player;
-
-    // カードがなければ勝負できない
-    if (me.totalCards === 0) return false;
-
-    // 星が1以下で慎重なAIは勝負を避ける
-    if (me.stars <= 1 && Math.random() < this.caution) return false;
-
-    // 攻撃的なAIほど勝負を好む
-    if (Math.random() < this.aggression) return true;
-
-    // デフォルト: 50%の確率で勝負
-    return Math.random() < 0.5;
   }
 
   /**
@@ -335,6 +322,7 @@ export function createAIPlayer() {
   // ws=null のダミーPlayerState
   const player = new PlayerState(id, null, name);
   player.isAI = true;
+  player.avatarId = Math.floor(Math.random() * 12);
 
   // send()をno-opにオーバーライド
   player.send = () => {};

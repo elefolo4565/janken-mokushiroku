@@ -31,7 +31,7 @@ alignment = 1
 
 [node name="TopSpacer" type="Control" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(0, 100)
 
 [node name="Title" type="Label" parent="VBox"]
 layout_mode = 2
@@ -47,7 +47,7 @@ vertical_alignment = 1
 
 [node name="Spacer1" type="Control" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 40)
 
 [node name="NameLabel" type="Label" parent="VBox"]
 layout_mode = 2
@@ -67,9 +67,30 @@ placeholder_text = "名前を入力..."
 alignment = 1
 max_length = 20
 
+[node name="Spacer1b" type="Control" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+
+[node name="AvatarLabel" type="Label" parent="VBox"]
+layout_mode = 2
+text = "アバター選択"
+horizontal_alignment = 1
+
+[node name="AvatarScroll" type="ScrollContainer" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 60)
+horizontal_scroll_mode = 1
+vertical_scroll_mode = 0
+
+[node name="AvatarRow" type="HBoxContainer" parent="VBox/AvatarScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 5
+
 [node name="Spacer2" type="Control" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 30)
 
 [node name="ButtonMargin" type="MarginContainer" parent="VBox"]
 layout_mode = 2
@@ -84,7 +105,7 @@ text = "接続する"
 
 [node name="Spacer3" type="Control" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 20)
 
 [node name="StatusLabel" type="Label" parent="VBox"]
 unique_name_in_owner = true

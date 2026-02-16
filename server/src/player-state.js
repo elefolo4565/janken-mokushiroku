@@ -7,6 +7,7 @@ export class PlayerState {
     this.name = name;
     this.roomId = null;
     this.isAI = false;
+    this.avatarId = 0;
 
     // ゲーム中の状態
     this.x = 0;
@@ -30,6 +31,10 @@ export class PlayerState {
     this.inZoneId = null;           // 現在いるゾーンID (null = いない)
     this.zoneMatchedWith = null;    // ゾーン内でマッチした相手ID
     this.zoneFightChoice = null;    // { hand: 'rock', bet: 100 } or null
+
+    // ジャンプ状態（勝負終了後の射出アニメーション用）
+    this.jumping = false;
+    this.jumpEndTick = 0;
   }
 
   initForGame(settings, spawnX, spawnY) {
@@ -52,6 +57,8 @@ export class PlayerState {
     this.inZoneId = null;
     this.zoneMatchedWith = null;
     this.zoneFightChoice = null;
+    this.jumping = false;
+    this.jumpEndTick = 0;
   }
 
   get totalCards() {
@@ -115,6 +122,8 @@ export class PlayerState {
       cleared: this.cleared,
       battling: this.battling,
       inZoneId: this.inZoneId,
+      jumping: this.jumping,
+      avatarId: this.avatarId,
     };
   }
 

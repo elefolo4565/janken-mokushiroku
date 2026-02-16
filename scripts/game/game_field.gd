@@ -49,7 +49,7 @@ func _sync_players() -> void:
 		if not _player_nodes.has(pid):
 			# 新しいプレイヤーノードを作成
 			var new_node: Node2D = PlayerCharacterScene.instantiate()
-			new_node.setup(pid, p_data.get("name", "???"), pid == GameState.player_id)
+			new_node.setup(pid, p_data.get("name", "???"), pid == GameState.player_id, p_data.get("avatarId", 0))
 			players_container.add_child(new_node)
 			_player_nodes[pid] = new_node
 

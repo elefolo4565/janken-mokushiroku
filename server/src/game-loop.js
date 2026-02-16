@@ -2,10 +2,12 @@ import { S2C, COMMANDS } from './protocol.js';
 import { CollisionSystem } from './collision.js';
 import { TradeManager } from './trade.js';
 import { BattleZoneManager } from './battle-zone.js';
+import { BattleLogger } from './battle-logger.js';
 
 const TICK_RATE = 20; // 20 ticks/sec
 const TICK_INTERVAL = 1000 / TICK_RATE;
 const GOAL_GATE = { x: 400, y: 50, radius: 40 }; // フィールド上部中央
+const JUMP_TICKS = 40; // ジャンプ所要時間: 2秒 × 20tick/sec
 
 export class GameLoop {
   constructor(room) {
@@ -18,20 +20,20 @@ export class GameLoop {
     this.timeLeft = this.settings.timeLimit;
     this.running = false;
     this.intervalId = null;
+    this.logger = new BattleLogger(room.id, room.name);
   }
 
   start() {
-    // プレイヤーの初期配置（円形に配置）
+    // プレイヤーの初期配置（フィールド最下部に横一列）
     const players = Array.from(this.room.players.values());
-    const cx = this.settings.fieldWidth / 2;
-    const cy = this.settings.fieldHeight / 2;
-    const spawnRadius = Math.min(this.settings.fieldWidth, this.settings.fieldHeight) * 0.35;
+    const r = this.settings.playerRadius;
+    const fw = this.settings.fieldWidth;
+    const fh = this.settings.fieldHeight;
+    const spawnY = fh - r;
 
     players.forEach((player, i) => {
-      const angle = (2 * Math.PI * i) / players.length;
-      const sx = cx + Math.cos(angle) * spawnRadius;
-      const sy = cy + Math.sin(angle) * spawnRadius;
-      player.initForGame(this.settings, sx, sy);
+      const sx = r + (fw - r * 2) * (i + 1) / (players.length + 1);
+      player.initForGame(this.settings, sx, spawnY);
       player.setVictoryStars(this.settings.victoryStars);
       player.setVictoryGold(this.settings.victoryGold || 0);
     });
@@ -64,6 +66,11 @@ export class GameLoop {
       player.send({ type: S2C.YOUR_CARDS, cards: player.toPrivateCardData() });
       player.send({ type: S2C.YOUR_GOLD, gold: player.gold });
     }
+
+    this.logger.logGameStart(
+      players.map(p => ({ name: p.name, id: p.id, isAI: !!p.isAI })),
+      this.settings
+    );
 
     this.running = true;
     this.intervalId = setInterval(() => this.update(), TICK_INTERVAL);
@@ -105,10 +112,18 @@ export class GameLoop {
       }
     }
 
-    // 1. プレイヤー位置更新（ゾーンマッチ中は移動停止）
+    // 0.5. ジャンプ終了チェック
+    for (const player of players.values()) {
+      if (player.jumping && this.tick >= player.jumpEndTick) {
+        player.jumping = false;
+      }
+    }
+
+    // 1. プレイヤー位置更新（ゾーンマッチ中・ジャンプ中は移動停止）
     for (const player of players.values()) {
       if (!player.alive || player.cleared) continue;
       if (player.zoneMatchedWith !== null) continue;
+      if (player.jumping) continue;
 
       const speed = this.settings.playerSpeed;
       player.x += player.inputDx * speed * dt;
@@ -130,7 +145,7 @@ export class GameLoop {
     // 4. 衝突検出（交渉モード同士のみ → 取引開始）
     const collisions = this.collision.detectCollisions(
       players, this.settings.playerRadius,
-      (p) => p.zoneMatchedWith === null
+      (p) => p.zoneMatchedWith === null && !p.jumping
     );
     for (const { p1, p2 } of collisions) {
       if (p1.command === COMMANDS.NEGOTIATE && p2.command === COMMANDS.NEGOTIATE) {
@@ -142,7 +157,7 @@ export class GameLoop {
     // 5. 押し出し処理（ゾーンマッチ中を除外）
     this.collision.resolveOverlaps(
       players, this.settings.playerRadius,
-      (p) => p.zoneMatchedWith === null
+      (p) => p.zoneMatchedWith === null && !p.jumping
     );
 
     // 6. ゴールゲート判定（ゾーンマッチ中はスキップ）
@@ -150,11 +165,13 @@ export class GameLoop {
       if (!player.alive || player.cleared) continue;
       if (!player.canGoal) continue;
       if (player.zoneMatchedWith !== null) continue;
+      if (player.jumping) continue;
 
       const dx = player.x - GOAL_GATE.x;
       const dy = player.y - GOAL_GATE.y;
       if (Math.sqrt(dx * dx + dy * dy) < GOAL_GATE.radius + this.settings.playerRadius) {
         player.cleared = true;
+        this.logger.logCleared(player.name);
         this.room.broadcast({
           type: S2C.PLAYER_CLEARED,
           playerId: player.id,
@@ -208,6 +225,7 @@ export class GameLoop {
     p2.inputDy = 0;
 
     this.zoneManager.startMatch(event.zone, p1.id, p2.id);
+    this.logger.logZoneMatch(p1.name, p2.name, event.zone.id);
 
     // 各プレイヤーに相手情報を送信
     p1.send({
@@ -234,24 +252,34 @@ export class GameLoop {
     });
   }
 
-  onZoneCancelled(event) {
+  onZoneCancelled(event, reason = 'opponent_left') {
     const zone = event.zone;
     if (!zone.matchedPair) return;
 
     const p1 = this.room.players.get(zone.matchedPair.p1Id);
     const p2 = this.room.players.get(zone.matchedPair.p2Id);
 
+    const names = [p1?.name, p2?.name].filter(Boolean);
+    this.logger.logZoneCancelled('cancelled', names);
+
     this.zoneManager.clearZone(zone, p1, p2);
 
     // 両者をゾーンから3キャラ分離れた位置に強制移動
     this._ejectFromZone(zone, p1, p2);
 
-    if (p1) p1.send({ type: S2C.ZONE_CANCELLED });
-    if (p2) p2.send({ type: S2C.ZONE_CANCELLED });
+    if (p1) p1.send({ type: S2C.ZONE_CANCELLED, reason });
+    if (p2) p2.send({ type: S2C.ZONE_CANCELLED, reason });
   }
 
   onZoneTimeout(event) {
-    this.onZoneCancelled(event);
+    const zone = event.zone;
+    if (zone.matchedPair) {
+      const p1 = this.room.players.get(zone.matchedPair.p1Id);
+      const p2 = this.room.players.get(zone.matchedPair.p2Id);
+      const names = [p1?.name, p2?.name].filter(Boolean);
+      this.logger.logZoneCancelled('timeout', names);
+    }
+    this.onZoneCancelled(event, 'timeout');
   }
 
   onZoneBothReady(event) {
@@ -268,6 +296,16 @@ export class GameLoop {
 
     // 両者をゾーンから3キャラ分離れた位置に強制移動
     this._ejectFromZone(zone, p1, p2);
+
+    // ログ記録
+    this.logger.logZoneFightResult({
+      p1Name: p1.name, p1Hand: result.hand1,
+      p2Name: p2.name, p2Hand: result.hand2,
+      winnerId: result.winnerId,
+      winnerName: result.winnerId === p1.id ? p1.name : result.winnerId === p2.id ? p2.name : null,
+      outcome: result.result,
+      bet: result.actualBet,
+    });
 
     // 結果をルーム全体にブロードキャスト
     this.room.broadcast({
@@ -329,8 +367,8 @@ export class GameLoop {
       // 両者をゾーンから3キャラ分離れた位置に強制移動
       this._ejectFromZone(zone, player, other);
 
-      if (other) other.send({ type: S2C.ZONE_CANCELLED });
-      player.send({ type: S2C.ZONE_CANCELLED });
+      if (other) other.send({ type: S2C.ZONE_CANCELLED, reason: 'opponent_left' });
+      player.send({ type: S2C.ZONE_CANCELLED, reason: 'self_left' });
     }
 
     // ゾーンから離脱
@@ -345,7 +383,6 @@ export class GameLoop {
    * 勝負終了後、両プレイヤーをゾーン中心から3キャラ分離れた位置にテレポート
    */
   _ejectFromZone(zone, p1, p2) {
-    const ejectDist = this.settings.playerRadius * 2 * 3; // 3キャラ分
     const r = this.settings.playerRadius;
     const fw = this.settings.fieldWidth;
     const fh = this.settings.fieldHeight;
@@ -353,28 +390,13 @@ export class GameLoop {
     for (const p of [p1, p2]) {
       if (!p || !p.alive) continue;
 
-      // プレイヤーからゾーン中心への方向ベクトル
-      let dx = p.x - zone.x;
-      let dy = p.y - zone.y;
-      const len = Math.sqrt(dx * dx + dy * dy);
+      // スタート位置（フィールド最下部）に戻す。横位置はランダム
+      p.x = r + Math.random() * (fw - r * 2);
+      p.y = fh - r;
 
-      if (len > 0.1) {
-        // ゾーン中心から外向きに飛ばす
-        dx = dx / len;
-        dy = dy / len;
-      } else {
-        // ゾーン中心にぴったり重なっている場合はランダム方向
-        const angle = Math.random() * Math.PI * 2;
-        dx = Math.cos(angle);
-        dy = Math.sin(angle);
-      }
-
-      p.x = zone.x + dx * (zone.radius + ejectDist);
-      p.y = zone.y + dy * (zone.radius + ejectDist);
-
-      // フィールド境界クランプ
-      p.x = Math.max(r, Math.min(fw - r, p.x));
-      p.y = Math.max(r, Math.min(fh - r, p.y));
+      // ジャンプ状態開始
+      p.jumping = true;
+      p.jumpEndTick = this.tick + JUMP_TICKS;
     }
   }
 
@@ -430,6 +452,7 @@ export class GameLoop {
     if (!player || !player.alive) return;
 
     player.alive = false;
+    this.logger.logElimination(player.name, reason);
 
     // ゾーンマッチ中ならキャンセル
     if (player.inZoneId) {
@@ -440,7 +463,7 @@ export class GameLoop {
           : zone.matchedPair.p1Id;
         const other = this.room.players.get(otherId);
         this.zoneManager.clearZone(zone, player, other);
-        if (other) other.send({ type: S2C.ZONE_CANCELLED });
+        if (other) other.send({ type: S2C.ZONE_CANCELLED, reason: 'opponent_eliminated' });
       }
       if (zone) {
         zone.playerIds = zone.playerIds.filter(id => id !== playerId);
@@ -483,6 +506,8 @@ export class GameLoop {
       if (b.stars !== a.stars) return b.stars - a.stars;
       return b.gold - a.gold;
     });
+
+    this.logger.logGameEnd(results);
 
     this.room.broadcast({
       type: S2C.GAME_OVER,

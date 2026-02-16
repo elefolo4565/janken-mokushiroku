@@ -66,8 +66,8 @@ func is_connected_to_server() -> bool:
 
 # --- 便利メソッド ---
 
-func set_player_name(player_name: String) -> void:
-	send_message({"type": "set_name", "name": player_name})
+func set_player_name(player_name: String, avatar_id: int = 0) -> void:
+	send_message({"type": "set_name", "name": player_name, "avatarId": avatar_id})
 
 func create_room(room_name: String, settings: Dictionary = {}) -> void:
 	send_message({"type": "create_room", "roomName": room_name, "settings": settings})

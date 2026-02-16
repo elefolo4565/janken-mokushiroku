@@ -5,6 +5,7 @@ extends Node
 # プレイヤー情報
 var player_id := ""
 var player_name := ""
+var player_avatar_id := 0
 
 # ルーム情報
 var current_room: Dictionary = {}

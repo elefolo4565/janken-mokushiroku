@@ -46,6 +46,7 @@ function handleMessage(player, data) {
   switch (data.type) {
     case C2S.SET_NAME:
       player.name = String(data.name || '').substring(0, 20) || 'ゲスト';
+      player.avatarId = Math.max(0, Math.min(11, Number(data.avatarId) || 0));
       player.send({ type: 'name_set', name: player.name });
       break;
 

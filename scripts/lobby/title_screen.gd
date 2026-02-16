@@ -1,11 +1,19 @@
 extends Control
 
 ## タイトル画面
-## 名前入力 → サーバー接続 → ルーム一覧画面へ
+## 名前入力 + アバター選択 → サーバー接続 → ルーム一覧画面へ
+
+const SAVE_PATH := "user://settings.cfg"
+const AVATAR_COUNT := 12
+const AVATAR_PREVIEW_SIZE := 40
 
 @onready var name_input: LineEdit = %NameInput
 @onready var connect_button: Button = %ConnectButton
 @onready var status_label: Label = %StatusLabel
+@onready var avatar_row: HBoxContainer = %AvatarRow
+
+var _selected_avatar_id := 0
+var _avatar_buttons: Array[Button] = []
 
 func _ready() -> void:
 	NetworkManager.connected.connect(_on_server_connected)
@@ -13,10 +21,64 @@ func _ready() -> void:
 	NetworkManager.message_received.connect(_on_message)
 	connect_button.pressed.connect(_on_connect_pressed)
 
+	# アバター選択ボタンを生成
+	_create_avatar_buttons()
+
+	# 保存された設定を復元
+	_load_settings()
+
 	# 既に接続済みの場合
 	if NetworkManager.is_connected_to_server():
 		status_label.text = "接続済み"
 		connect_button.text = "ルーム一覧へ"
+
+func _create_avatar_buttons() -> void:
+	for i in range(AVATAR_COUNT):
+		var btn := Button.new()
+		btn.toggle_mode = true
+		btn.custom_minimum_size = Vector2(AVATAR_PREVIEW_SIZE + 10, AVATAR_PREVIEW_SIZE + 10)
+
+		# アバタープレビュー用のTextureRect
+		var tex_rect := TextureRect.new()
+		tex_rect.texture = _generate_avatar_preview(i)
+		tex_rect.custom_minimum_size = Vector2(AVATAR_PREVIEW_SIZE, AVATAR_PREVIEW_SIZE)
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(tex_rect)
+
+		btn.pressed.connect(_on_avatar_selected.bind(i))
+		avatar_row.add_child(btn)
+		_avatar_buttons.append(btn)
+
+	# 初期選択をハイライト
+	_update_avatar_highlight()
+
+func _generate_avatar_preview(aid: int) -> ImageTexture:
+	var size := AVATAR_PREVIEW_SIZE
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var hue := float(aid) / float(AVATAR_COUNT)
+	var color := Color.from_hsv(hue, 0.7, 0.9)
+	var center := Vector2(size / 2.0, size / 2.0)
+	var radius := size / 2.0 - 1.0
+
+	for y in range(size):
+		for x in range(size):
+			var dist := Vector2(x + 0.5, y + 0.5).distance_to(center)
+			if dist <= radius:
+				img.set_pixel(x, y, color)
+			else:
+				img.set_pixel(x, y, Color(0, 0, 0, 0))
+
+	return ImageTexture.create_from_image(img)
+
+func _on_avatar_selected(aid: int) -> void:
+	_selected_avatar_id = aid
+	GameState.player_avatar_id = aid
+	_update_avatar_highlight()
+
+func _update_avatar_highlight() -> void:
+	for i in range(_avatar_buttons.size()):
+		_avatar_buttons[i].button_pressed = (i == _selected_avatar_id)
 
 func _on_connect_pressed() -> void:
 	var player_name := name_input.text.strip_edges()
@@ -25,10 +87,12 @@ func _on_connect_pressed() -> void:
 		return
 
 	GameState.player_name = player_name
+	GameState.player_avatar_id = _selected_avatar_id
+	_save_settings()
 
 	if NetworkManager.is_connected_to_server():
 		# 既に接続済みなら名前を設定してルーム一覧へ
-		NetworkManager.set_player_name(player_name)
+		NetworkManager.set_player_name(player_name, _selected_avatar_id)
 	else:
 		status_label.text = "接続中..."
 		connect_button.disabled = true
@@ -36,7 +100,7 @@ func _on_connect_pressed() -> void:
 
 func _on_server_connected() -> void:
 	status_label.text = "接続成功！"
-	NetworkManager.set_player_name(GameState.player_name)
+	NetworkManager.set_player_name(GameState.player_name, GameState.player_avatar_id)
 
 func _on_server_disconnected() -> void:
 	status_label.text = "接続が切断されました"
@@ -48,3 +112,19 @@ func _on_message(data: Dictionary) -> void:
 		var main_node := get_tree().root.get_node("Main")
 		if main_node and main_node.has_method("change_scene"):
 			main_node.change_scene("res://scenes/lobby/room_list.tscn")
+
+func _save_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value("player", "name", name_input.text.strip_edges())
+	config.set_value("player", "avatar_id", _selected_avatar_id)
+	config.save(SAVE_PATH)
+
+func _load_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(SAVE_PATH) == OK:
+		var saved_name: String = config.get_value("player", "name", "")
+		if not saved_name.is_empty():
+			name_input.text = saved_name
+		_selected_avatar_id = config.get_value("player", "avatar_id", 0)
+		GameState.player_avatar_id = _selected_avatar_id
+		_update_avatar_highlight()
